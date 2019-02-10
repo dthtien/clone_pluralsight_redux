@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import * as courseActions from '../../actions/courseActions';
 import CourseForm from './CourseForm';
-import About from '../About/AboutPage';
+import * as _ from '../../utils/helpers';
 
 class ManageCoursePage extends Component {
   constructor(props, context){
@@ -14,7 +14,25 @@ class ManageCoursePage extends Component {
       errors: {}
     };
 
+    this.context = context
+
     this.handleInputChange = this.handleInputChange.bind(this)
+    this.saveCourses = this.saveCourses.bind(this)
+  }
+
+  // componentDidUpdate(prevProps){
+  //   if(prevProps.course.id !== this.props.course.id){
+  //     this.setState({course: Object.assign({}, this.props.course)})
+  //   }
+  // }
+
+  static getDerivedStateFromProps(props, current_state) {
+    if (current_state.course.id !== props.course.id) {
+      return {
+        course: props.course,
+      }
+    }
+    return null;
   }
 
   handleInputChange(event){
@@ -23,6 +41,12 @@ class ManageCoursePage extends Component {
       { [event.target.name]: event.target.value}
     )
     this.setState({course: course})
+  }
+
+  saveCourses(event){
+    event.preventDefault();
+    this.props.actions.saveCourse(this.state.course)
+    this.context.router.history.push('/courses')
   }
 
   render(){
@@ -34,6 +58,7 @@ class ManageCoursePage extends Component {
           course={this.state.course} 
           errors={this.state.errors}
           onChange={this.handleInputChange}
+          onSave={this.saveCourses}
         />
       </div>
     );
@@ -42,25 +67,45 @@ class ManageCoursePage extends Component {
 
 ManageCoursePage.propType = {
   course: PropTypes.object.isRequired,
-  authors: PropTypes.array.isRequired
+  authors: PropTypes.array.isRequired,
+  actions: PropTypes.object.isRequired
 }
 
-function mapStateToProps(state, ownProps){
-  let course = {
-    id: '', 
-    watchHref: '',
-    title: '',
-    authorId: '',
-    length: '',
-    category: ''
-  }
+ManageCoursePage.contextTypes = {
+  router: PropTypes.object
+}
 
+const defaultCourse = {
+  id: '', 
+  watchHref: '',
+  title: '',
+  authorId: '',
+  length: '',
+  category: ''
+};
+
+const getCourseById = (courses, courseId) => {
+  const course = courses.filter(course => course.id === courseId)
+  if(course) return course[0];
+  return ;
+}
+
+const mapStateToProps = (state, ownProps) => {
+  const courseId = ownProps.match.params.id;
+  let course = defaultCourse;
+
+  if (courseId && state.courses.length > 0) {
+    course = getCourseById(state.courses, courseId)
+  }
+  
   const authorsFormattedForDropdown = state.authors.map(author => {
     return {
       value: author.id,
       text: author.firstName + ' ' + author.lastName 
     }
-  });s
+  });
+  
+
   return {
     course: course,
     authors: authorsFormattedForDropdown

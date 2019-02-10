@@ -4,8 +4,6 @@ import { Link } from 'react-router-dom';
 class HomePage extends Component {
   constructor(props){
     super(props)
-    // debugger
-    // this.state = {title: props.title}
   }
   render() {
     return(

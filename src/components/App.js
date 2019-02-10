@@ -1,7 +1,6 @@
-import React, { Component }from 'react';
+import React from 'react';
 import Routers from '../routers';
 import Header from './shared/Header';
-
 const App = () => (
   <div className="container-fluid">
     <Header />
